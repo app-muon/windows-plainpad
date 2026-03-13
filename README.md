@@ -1,4 +1,4 @@
-# windows-noteplainpad v2.0
+# windows-plainpad v2.0
 
 A minimal Windows Notepad replacement written in Python and Tkinter. No network connections, no AI, no telemetry — just a plain text editor.
 
