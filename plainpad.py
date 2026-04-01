@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
+from tkinter import font as tkfont
 import os
 import tempfile
 
@@ -32,6 +33,10 @@ class Notepad:
 
         self.docs = []       # list of Document
         self.active = None   # current Document
+
+        self._zoom_size = 11
+        self._font = tkfont.Font(font=tkfont.nametofont("TkDefaultFont"))
+        self._font.configure(size=self._zoom_size)
 
         self._build_menu()
         self._build_tab_bar()
@@ -113,7 +118,7 @@ class Notepad:
         yscroll = tk.Scrollbar(text_frame)
         yscroll.pack(side=tk.RIGHT, fill=tk.Y)
 
-        text = tk.Text(text_frame, undo=True, wrap=tk.NONE, yscrollcommand=yscroll.set)
+        text = tk.Text(text_frame, undo=True, wrap=tk.NONE, yscrollcommand=yscroll.set, font=self._font)
         text.pack(fill=tk.BOTH, expand=True)
         yscroll.config(command=text.yview)
 
@@ -138,6 +143,7 @@ class Notepad:
         find_entry.bind("<Escape>", lambda e, d=doc: self._hide_find(d))
 
         text.bind("<<Modified>>", lambda e, d=doc: self._on_modified(d))
+        text.bind("<Control-MouseWheel>", self._zoom)
 
         return doc
 
@@ -460,6 +466,14 @@ class Notepad:
         r.bind("<Control-Tab>",       lambda e: self._next_tab())
         r.bind("<Control-Shift-Tab>", lambda e: self._prev_tab())
         r.protocol("WM_DELETE_WINDOW", self.exit_app)
+
+    def _zoom(self, event):
+        step = 1 if event.delta > 0 else -1
+        new_size = self._zoom_size + step
+        if 6 <= new_size <= 72:
+            self._zoom_size = new_size
+            self._font.configure(size=self._zoom_size)
+        return "break"
 
     def _next_tab(self):
         if len(self.docs) < 2:

@@ -12,6 +12,7 @@ A minimal Windows Notepad replacement written in Python and Tkinter. No network 
 - Cut, Copy, Paste, Select All
 - Inline Find bar (not a modal) with Next / Previous and Match Case toggle (per tab)
 - Resizable window with scrollbars
+- Zoom in/out with Ctrl+Scroll
 - Keyboard shortcuts:
 
 | Action        | Shortcut           |
@@ -27,6 +28,7 @@ A minimal Windows Notepad replacement written in Python and Tkinter. No network 
 | Find          | Ctrl+F             |
 | Next tab      | Ctrl+Tab           |
 | Previous tab  | Ctrl+Shift+Tab     |
+| Zoom in/out   | Ctrl+Scroll        |
 
 ## Just want to use it?
 
