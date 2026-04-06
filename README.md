@@ -1,34 +1,44 @@
 # windows-plainpad v2.0
 
-A minimal Windows Notepad replacement written in Python and Tkinter. No network connections, no AI, no telemetry — just a plain text editor.
+A minimal Windows Notepad replacement written in Python and Tkinter. No network connections, no AI, no telemetry, just a plain text editor with a lightweight markdown preview mode.
 
 ## Features
 
-- Multiple tabs — open as many documents as you like simultaneously
-- File operations: New, New Tab, Open, Save, Save As, Close Tab (UTF-8 encoding)
-- Atomic saves — writes to a temp file first, so the original is never lost if a save fails
-- Prompts to save unsaved changes on close tab, New, Open, and Exit (per tab)
-- Undo / Redo (independent per tab)
+- Multiple tabs so you can work with several documents at once
+- New tab `+` button in the tab strip
+- File operations: New, New Tab, Open, Save, Save As, Close Tab
+- Recent Files menu with persistent history and one-click reopen
+- Atomic saves using a temporary file first, so the original is not lost if save fails
+- Save prompts for unsaved changes on close tab, New, Open, and Exit
+- Undo / Redo per tab
 - Cut, Copy, Paste, Select All
-- Inline Find bar (not a modal) with Next / Previous and Match Case toggle (per tab)
+- Inline Find bar with Next / Previous and Match Case
+- Fixed-width editing font
+- Markdown source / preview mode with a bottom-right view toggle
+- Markdown preview supports headings, lists, block quotes, inline code, fenced code blocks, and aligned pipe tables
 - Resizable window with scrollbars
 - Zoom in/out with Ctrl+Scroll
+- UTF-8 text files
+
 - Keyboard shortcuts:
 
-| Action        | Shortcut           |
-|---------------|--------------------|
-| New           | Ctrl+N             |
-| New Tab       | Ctrl+T             |
-| Open          | Ctrl+O             |
-| Save          | Ctrl+S             |
-| Save As       | Ctrl+Shift+S       |
-| Close Tab     | Ctrl+W             |
-| Undo          | Ctrl+Z             |
-| Redo          | Ctrl+Y             |
-| Find          | Ctrl+F             |
-| Next tab      | Ctrl+Tab           |
-| Previous tab  | Ctrl+Shift+Tab     |
-| Zoom in/out   | Ctrl+Scroll        |
+| Action         | Shortcut       |
+|----------------|----------------|
+| New            | Ctrl+N         |
+| New Tab        | Ctrl+T         |
+| Open           | Ctrl+O         |
+| Save           | Ctrl+S         |
+| Save As        | F12            |
+| Close Tab      | Ctrl+W         |
+| Undo           | Ctrl+Z         |
+| Redo           | Ctrl+Y         |
+| Find           | Ctrl+F         |
+| Toggle Preview | F6             |
+| Source View    | Alt+1          |
+| Preview View   | Alt+2          |
+| Next Tab       | Ctrl+Tab       |
+| Previous Tab   | Ctrl+Shift+Tab |
+| Zoom In/Out    | Ctrl+Scroll    |
 
 ## Just want to use it?
 
@@ -42,29 +52,34 @@ These steps are for developers who want to run the Python script directly or bui
 
 ### What you need
 
-- **Python 3** — download from [python.org](https://www.python.org/downloads/). During installation, tick the box that says **"Add Python to PATH"**.
+- **Python 3**: download from [python.org](https://www.python.org/downloads/). During installation, tick the box that says **"Add Python to PATH"**.
 
-### Running directly (no .exe needed)
+### Running directly
 
-1. Download `plainpad.py` and `build.bat` from this page and save them to the same folder
-2. Open a Command Prompt in that folder (type `cmd` into the File Explorer address bar and press Enter)
+1. Download `plainpad.py` and `build.bat` from this page and save them to the same folder.
+2. Open a Command Prompt in that folder.
 3. Run:
-   ```
-   python plainpad.py
-   ```
+
+```text
+python plainpad.py
+```
 
 ### Building a standalone plainpad.exe
 
-This produces a single `.exe` file you can share with others — they won't need Python installed.
+This produces a single `.exe` file you can share with others. They will not need Python installed.
 
-1. Download `plainpad.py` and `build.bat` from this page and save them to the same folder
-2. Open a Command Prompt in that folder (type `cmd` into the File Explorer address bar and press Enter)
-3. Install PyInstaller by running:
-   ```
-   pip install pyinstaller
-   ```
+1. Download `plainpad.py` and `build.bat` from this page and save them to the same folder.
+2. Open a Command Prompt in that folder.
+3. Install PyInstaller:
+
+```text
+pip install pyinstaller
+```
+
 4. Run the build script:
-   ```
-   build.bat
-   ```
-5. When it finishes, the file will be at `dist\plainpad.exe`
+
+```text
+build.bat
+```
+
+5. When it finishes, the file will be at `dist\plainpad.exe`.
