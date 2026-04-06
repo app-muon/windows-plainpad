@@ -2,4 +2,5 @@
 build/
 dist/
 *.spec
+.codex_ssh/
 __pycache__/
