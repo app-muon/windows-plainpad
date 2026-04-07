@@ -41,6 +41,74 @@ class Notepad:
         self._recent_files_limit = 10
         self._recent_files_path = self._get_recent_files_path()
         self._recent_files = []
+        self._color_presets = {
+            "Black on White": {
+                "text_fg": "#111111",
+                "text_bg": "#ffffff",
+                "preview_fg": "#111111",
+                "preview_bg": "#fcfcfc",
+                "quote_fg": "#555555",
+                "code_bg": "#f2f2f2",
+                "selection_bg": "#cfe8ff",
+                "selection_fg": "#111111",
+                "cursor": "#111111",
+                "found_bg": "#ffe066",
+                "found_fg": "#111111",
+            },
+            "Dark Mode": {
+                "text_fg": "#f2f2f2",
+                "text_bg": "#1e1e1e",
+                "preview_fg": "#f2f2f2",
+                "preview_bg": "#252526",
+                "quote_fg": "#b8b8b8",
+                "code_bg": "#333333",
+                "selection_bg": "#3d6ea8",
+                "selection_fg": "#ffffff",
+                "cursor": "#f2f2f2",
+                "found_bg": "#8a6d1f",
+                "found_fg": "#ffffff",
+            },
+            "Sepia": {
+                "text_fg": "#3d2f1f",
+                "text_bg": "#f4ecd8",
+                "preview_fg": "#3d2f1f",
+                "preview_bg": "#efe5cf",
+                "quote_fg": "#74624c",
+                "code_bg": "#e5d7bb",
+                "selection_bg": "#d3ba86",
+                "selection_fg": "#2f2417",
+                "cursor": "#3d2f1f",
+                "found_bg": "#f0c36d",
+                "found_fg": "#2f2417",
+            },
+            "Slate": {
+                "text_fg": "#e8eef5",
+                "text_bg": "#2f3b4c",
+                "preview_fg": "#e8eef5",
+                "preview_bg": "#354255",
+                "quote_fg": "#c0cbd8",
+                "code_bg": "#435268",
+                "selection_bg": "#6887aa",
+                "selection_fg": "#ffffff",
+                "cursor": "#e8eef5",
+                "found_bg": "#d9a441",
+                "found_fg": "#18202b",
+            },
+            "Terminal": {
+                "text_fg": "#8af78e",
+                "text_bg": "#081b12",
+                "preview_fg": "#8af78e",
+                "preview_bg": "#0d2418",
+                "quote_fg": "#6fd087",
+                "code_bg": "#143325",
+                "selection_bg": "#1f5c41",
+                "selection_fg": "#d7ffe0",
+                "cursor": "#8af78e",
+                "found_bg": "#335f1d",
+                "found_fg": "#d7ffe0",
+            },
+        }
+        self._color_scheme_var = tk.StringVar(value="Black on White")
 
         self._zoom_size = 11
         self._font = tkfont.Font(font=tkfont.nametofont("TkFixedFont"))
@@ -138,6 +206,17 @@ class Notepad:
 
         self.status_bar = tk.Frame(self.root, bd=1, relief=tk.SUNKEN)
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        color_picker = tk.Frame(self.status_bar)
+        color_picker.pack(side=tk.LEFT, padx=4, pady=2)
+        self._color_menu = tk.OptionMenu(
+            color_picker,
+            self._color_scheme_var,
+            *self._color_presets.keys(),
+            command=lambda _choice: self._apply_color_scheme(),
+        )
+        self._color_menu.config(width=16)
+        self._color_menu.pack(side=tk.LEFT)
+
         mode_switch = tk.Frame(self.status_bar)
         mode_switch.pack(side=tk.RIGHT, padx=4, pady=2)
         self._source_btn = tk.Button(mode_switch, text="Source", relief=tk.SUNKEN, command=lambda: self._set_view_mode(self.active, "source"))
@@ -188,7 +267,6 @@ class Notepad:
             state=tk.DISABLED,
             padx=16,
             pady=12,
-            background="#fcfcfc",
             relief=tk.FLAT,
         )
         preview.pack(fill=tk.BOTH, expand=True)
@@ -219,8 +297,35 @@ class Notepad:
         preview.bind("<1>", lambda e, d=doc: self._focus_visible_widget(d))
 
         self._configure_preview_tags(preview)
+        self._apply_colors_to_doc(doc)
 
         return doc
+
+    def _current_color_scheme(self):
+        return self._color_presets[self._color_scheme_var.get()]
+
+    def _apply_color_scheme(self):
+        for doc in self.docs:
+            self._apply_colors_to_doc(doc)
+
+    def _apply_colors_to_doc(self, doc):
+        colors = self._current_color_scheme()
+        doc.text.config(
+            foreground=colors["text_fg"],
+            background=colors["text_bg"],
+            insertbackground=colors["cursor"],
+            selectbackground=colors["selection_bg"],
+            selectforeground=colors["selection_fg"],
+        )
+        doc.preview.config(
+            foreground=colors["preview_fg"],
+            background=colors["preview_bg"],
+            insertbackground=colors["cursor"],
+            selectbackground=colors["selection_bg"],
+            selectforeground=colors["selection_fg"],
+        )
+        doc.text.tag_config("found", background=colors["found_bg"], foreground=colors["found_fg"])
+        self._configure_preview_tags(doc.preview)
 
     # ------------------------------------------------------------------
     # Tab management
@@ -516,7 +621,8 @@ class Notepad:
             return
 
         doc.text.tag_remove("found", "1.0", tk.END)
-        doc.text.tag_config("found", background="yellow")
+        colors = self._current_color_scheme()
+        doc.text.tag_config("found", background=colors["found_bg"], foreground=colors["found_fg"])
         nocase = not doc.case_var.get()
 
         try:
@@ -748,13 +854,14 @@ class Notepad:
             preview.insert(tk.END, text[pos:])
 
     def _configure_preview_tags(self, preview):
+        colors = self._current_color_scheme()
         preview.tag_config("heading1", font=self._preview_fonts["heading1"], spacing1=6, spacing3=8)
         preview.tag_config("heading2", font=self._preview_fonts["heading2"], spacing1=5, spacing3=7)
         preview.tag_config("heading3", font=self._preview_fonts["heading3"], spacing1=4, spacing3=6)
-        preview.tag_config("blockquote", lmargin1=18, lmargin2=18, foreground="#555555", spacing3=3)
+        preview.tag_config("blockquote", lmargin1=18, lmargin2=18, foreground=colors["quote_fg"], spacing3=3)
         preview.tag_config("list", lmargin1=12, lmargin2=24, spacing3=2)
-        preview.tag_config("codeblock", font=self._preview_fonts["code"], background="#f2f2f2", lmargin1=12, lmargin2=12, spacing1=3, spacing3=3)
-        preview.tag_config("inline_code", font=self._preview_fonts["code"], background="#f2f2f2")
+        preview.tag_config("codeblock", font=self._preview_fonts["code"], background=colors["code_bg"], lmargin1=12, lmargin2=12, spacing1=3, spacing3=3)
+        preview.tag_config("inline_code", font=self._preview_fonts["code"], background=colors["code_bg"])
         preview.tag_config("bold", font=self._preview_fonts["bold"])
         preview.tag_config("italic", font=self._preview_fonts["italic"])
         preview.tag_config("bold_italic", font=self._preview_fonts["bold_italic"])
@@ -835,13 +942,14 @@ class Notepad:
         preview.config(state=tk.DISABLED)
 
     def _configure_preview_tags(self, preview):
+        colors = self._current_color_scheme()
         preview.tag_config("heading1", font=self._preview_fonts["heading1"], spacing1=6, spacing3=8)
         preview.tag_config("heading2", font=self._preview_fonts["heading2"], spacing1=5, spacing3=7)
         preview.tag_config("heading3", font=self._preview_fonts["heading3"], spacing1=4, spacing3=6)
-        preview.tag_config("blockquote", lmargin1=18, lmargin2=18, foreground="#555555", spacing3=3)
+        preview.tag_config("blockquote", lmargin1=18, lmargin2=18, foreground=colors["quote_fg"], spacing3=3)
         preview.tag_config("list", lmargin1=12, lmargin2=24, spacing3=2)
-        preview.tag_config("codeblock", font=self._preview_fonts["code"], background="#f2f2f2", lmargin1=12, lmargin2=12, spacing1=3, spacing3=3)
-        preview.tag_config("inline_code", font=self._preview_fonts["code"], background="#f2f2f2")
+        preview.tag_config("codeblock", font=self._preview_fonts["code"], background=colors["code_bg"], lmargin1=12, lmargin2=12, spacing1=3, spacing3=3)
+        preview.tag_config("inline_code", font=self._preview_fonts["code"], background=colors["code_bg"])
         preview.tag_config("table", font=self._preview_fonts["code"], spacing1=2, spacing3=2)
         preview.tag_config("bold", font=self._preview_fonts["bold"])
         preview.tag_config("italic", font=self._preview_fonts["italic"])
