@@ -201,9 +201,6 @@ class Notepad:
 
     def _build_content_area(self):
         """Container that holds whichever text+findbar is active."""
-        self.content = tk.Frame(self.root)
-        self.content.pack(fill=tk.BOTH, expand=True)
-
         self.status_bar = tk.Frame(self.root, bd=1, relief=tk.SUNKEN)
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
         color_picker = tk.Frame(self.status_bar)
@@ -223,6 +220,9 @@ class Notepad:
         self._source_btn.pack(side=tk.LEFT, padx=(0, 2))
         self._preview_btn = tk.Button(mode_switch, text="Preview", relief=tk.FLAT, command=lambda: self._set_view_mode(self.active, "preview"))
         self._preview_btn.pack(side=tk.LEFT)
+
+        self.content = tk.Frame(self.root)
+        self.content.pack(fill=tk.BOTH, expand=True)
 
     def _make_doc_widgets(self):
         """Create the text area and find bar widgets for a new document."""
