@@ -4,6 +4,7 @@ from tkinter import font as tkfont
 import json
 import os
 import re
+import sys
 import tempfile
 
 __version__ = "2.0"
@@ -1078,6 +1079,8 @@ class Notepad:
 def main():
     root = tk.Tk()
     app = Notepad(root)
+    if len(sys.argv) > 1:
+        app._open_path(sys.argv[1])
     root.mainloop()
 
 

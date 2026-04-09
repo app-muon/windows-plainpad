@@ -64,6 +64,12 @@ These steps are for developers who want to run the Python script directly or bui
 python plainpad.py
 ```
 
+To open a file directly at launch, pass the path as the first argument:
+
+```text
+python plainpad.py "C:\path\to\file.md"
+```
+
 ### Building a standalone plainpad.exe
 
 This produces a single `.exe` file you can share with others. They will not need Python installed.
@@ -83,3 +89,9 @@ build.bat
 ```
 
 5. When it finishes, the file will be at `dist\plainpad.exe`.
+
+You can also launch the built app with a file path:
+
+```text
+plainpad.exe "C:\path\to\file.md"
+```
