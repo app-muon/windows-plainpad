@@ -120,6 +120,9 @@ class Notepad:
             "heading1": tkfont.Font(font=self._ui_font),
             "heading2": tkfont.Font(font=self._ui_font),
             "heading3": tkfont.Font(font=self._ui_font),
+            "heading4": tkfont.Font(font=self._ui_font),
+            "heading5": tkfont.Font(font=self._ui_font),
+            "heading6": tkfont.Font(font=self._ui_font),
             "bold": tkfont.Font(font=self._ui_font),
             "italic": tkfont.Font(font=self._ui_font),
             "bold_italic": tkfont.Font(font=self._ui_font),
@@ -129,6 +132,9 @@ class Notepad:
         self._preview_fonts["heading1"].configure(size=self._zoom_size + 8, weight="bold")
         self._preview_fonts["heading2"].configure(size=self._zoom_size + 5, weight="bold")
         self._preview_fonts["heading3"].configure(size=self._zoom_size + 2, weight="bold")
+        self._preview_fonts["heading4"].configure(size=self._zoom_size + 2, weight="bold")
+        self._preview_fonts["heading5"].configure(size=self._zoom_size + 1, weight="bold")
+        self._preview_fonts["heading6"].configure(size=self._zoom_size + 1, weight="bold", slant="italic")
         self._preview_fonts["bold"].configure(size=self._zoom_size, weight="bold")
         self._preview_fonts["italic"].configure(size=self._zoom_size, slant="italic")
         self._preview_fonts["bold_italic"].configure(size=self._zoom_size, weight="bold", slant="italic")
@@ -690,6 +696,9 @@ class Notepad:
             self._preview_fonts["heading1"].configure(size=self._zoom_size + 8)
             self._preview_fonts["heading2"].configure(size=self._zoom_size + 5)
             self._preview_fonts["heading3"].configure(size=self._zoom_size + 2)
+            self._preview_fonts["heading4"].configure(size=self._zoom_size + 2)
+            self._preview_fonts["heading5"].configure(size=self._zoom_size + 1)
+            self._preview_fonts["heading6"].configure(size=self._zoom_size + 1)
             self._preview_fonts["bold"].configure(size=self._zoom_size)
             self._preview_fonts["italic"].configure(size=self._zoom_size)
             self._preview_fonts["bold_italic"].configure(size=self._zoom_size)
@@ -755,66 +764,14 @@ class Notepad:
                 pass
         doc.preview_after_id = self.root.after(150, lambda d=doc: self._refresh_markdown_preview(d))
 
-    def _refresh_markdown_preview(self, doc):
-        if doc.preview_after_id:
-            try:
-                self.root.after_cancel(doc.preview_after_id)
-            except tk.TclError:
-                pass
-            doc.preview_after_id = None
-
-        preview = doc.preview
-        source = doc.text.get("1.0", "end-1c")
-        preview.config(state=tk.NORMAL)
-        preview.delete("1.0", tk.END)
-
-        in_code_block = False
-        for line in source.splitlines():
-            stripped = line.strip()
-            if stripped.startswith("```"):
-                in_code_block = not in_code_block
-                preview.insert(tk.END, "\n")
-                continue
-
-            if in_code_block:
-                self._append_preview_line(preview, line, block_tag="codeblock")
-                continue
-
-            heading_match = re.match(r"^(#{1,3})\s+(.*)$", line)
-            if heading_match:
-                level = len(heading_match.group(1))
-                self._append_preview_line(preview, heading_match.group(2), block_tag=f"heading{level}")
-                continue
-
-            quote_match = re.match(r"^\s*>\s?(.*)$", line)
-            if quote_match:
-                self._append_preview_line(preview, quote_match.group(1), block_tag="blockquote")
-                continue
-
-            bullet_match = re.match(r"^(\s*)([-*+])\s+(.*)$", line)
-            if bullet_match:
-                indent = "  " * (len(bullet_match.group(1)) // 2)
-                self._append_preview_line(preview, f"{indent}• {bullet_match.group(3)}", block_tag="list")
-                continue
-
-            ordered_match = re.match(r"^(\s*)(\d+)\.\s+(.*)$", line)
-            if ordered_match:
-                indent = "  " * (len(ordered_match.group(1)) // 2)
-                self._append_preview_line(preview, f"{indent}{ordered_match.group(2)}. {ordered_match.group(3)}", block_tag="list")
-                continue
-
-            self._append_preview_line(preview, line)
-
-        preview.config(state=tk.DISABLED)
-
     def _append_preview_line(self, preview, text, block_tag=None):
         if block_tag in ("codeblock", "table"):
             preview.insert(tk.END, text, (block_tag,))
         else:
-            line_start = preview.index(tk.END)
+            line_start = preview.index("end-1c")
             self._insert_markdown_inline(preview, text)
             if block_tag:
-                line_end = preview.index(tk.END)
+                line_end = preview.index("end-1c")
                 preview.tag_add(block_tag, line_start, line_end)
         preview.insert(tk.END, "\n")
 
@@ -854,18 +811,15 @@ class Notepad:
         if pos < len(text):
             preview.insert(tk.END, text[pos:])
 
-    def _configure_preview_tags(self, preview):
-        colors = self._current_color_scheme()
-        preview.tag_config("heading1", font=self._preview_fonts["heading1"], spacing1=6, spacing3=8)
-        preview.tag_config("heading2", font=self._preview_fonts["heading2"], spacing1=5, spacing3=7)
-        preview.tag_config("heading3", font=self._preview_fonts["heading3"], spacing1=4, spacing3=6)
-        preview.tag_config("blockquote", lmargin1=18, lmargin2=18, foreground=colors["quote_fg"], spacing3=3)
-        preview.tag_config("list", lmargin1=12, lmargin2=24, spacing3=2)
-        preview.tag_config("codeblock", font=self._preview_fonts["code"], background=colors["code_bg"], lmargin1=12, lmargin2=12, spacing1=3, spacing3=3)
-        preview.tag_config("inline_code", font=self._preview_fonts["code"], background=colors["code_bg"])
-        preview.tag_config("bold", font=self._preview_fonts["bold"])
-        preview.tag_config("italic", font=self._preview_fonts["italic"])
-        preview.tag_config("bold_italic", font=self._preview_fonts["bold_italic"])
+    def _parse_heading(self, line):
+        heading_match = re.match(r"^ {0,3}(#{1,6})(?:[ \t]+|$)(.*)$", line)
+        if not heading_match:
+            return None
+
+        level = len(heading_match.group(1))
+        text = heading_match.group(2).strip()
+        text = re.sub(r"[ \t]+#+[ \t]*$", "", text).rstrip()
+        return level, text
 
     def _refresh_markdown_preview(self, doc):
         if doc.preview_after_id:
@@ -910,10 +864,10 @@ class Notepad:
                 self._render_table(preview, table_lines)
                 continue
 
-            heading_match = re.match(r"^(#{1,3})\s+(.*)$", line)
-            if heading_match:
-                level = len(heading_match.group(1))
-                self._append_preview_line(preview, heading_match.group(2), block_tag=f"heading{level}")
+            heading = self._parse_heading(line)
+            if heading is not None:
+                level, text = heading
+                self._append_preview_line(preview, text, block_tag=f"heading{level}")
                 i += 1
                 continue
 
@@ -947,6 +901,9 @@ class Notepad:
         preview.tag_config("heading1", font=self._preview_fonts["heading1"], spacing1=6, spacing3=8)
         preview.tag_config("heading2", font=self._preview_fonts["heading2"], spacing1=5, spacing3=7)
         preview.tag_config("heading3", font=self._preview_fonts["heading3"], spacing1=4, spacing3=6)
+        preview.tag_config("heading4", font=self._preview_fonts["heading4"], spacing1=3, spacing3=5)
+        preview.tag_config("heading5", font=self._preview_fonts["heading5"], spacing1=3, spacing3=4)
+        preview.tag_config("heading6", font=self._preview_fonts["heading6"], spacing1=2, spacing3=4)
         preview.tag_config("blockquote", lmargin1=18, lmargin2=18, foreground=colors["quote_fg"], spacing3=3)
         preview.tag_config("list", lmargin1=12, lmargin2=24, spacing3=2)
         preview.tag_config("codeblock", font=self._preview_fonts["code"], background=colors["code_bg"], lmargin1=12, lmargin2=12, spacing1=3, spacing3=3)
@@ -955,6 +912,8 @@ class Notepad:
         preview.tag_config("bold", font=self._preview_fonts["bold"])
         preview.tag_config("italic", font=self._preview_fonts["italic"])
         preview.tag_config("bold_italic", font=self._preview_fonts["bold_italic"])
+        for level in range(1, 7):
+            preview.tag_raise(f"heading{level}")
 
     def _looks_like_table_row(self, line):
         stripped = line.strip()

@@ -15,7 +15,7 @@ A minimal Windows Notepad replacement written in Python and Tkinter. No network 
 - Inline Find bar with Next / Previous and Match Case
 - Fixed-width editing font
 - Markdown source / preview mode with a bottom-right view toggle
-- Markdown preview supports headings, lists, block quotes, inline code, fenced code blocks, and aligned pipe tables
+- Markdown preview supports headings `#` through `######`, lists, block quotes, inline code, fenced code blocks, and aligned pipe tables
 - Resizable window with scrollbars
 - Zoom in/out with Ctrl+Scroll
 - UTF-8 text files
